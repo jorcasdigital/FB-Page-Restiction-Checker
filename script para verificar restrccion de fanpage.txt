@@ -1,0 +1,58 @@
+var uid = require("CurrentUserInitialData").ACCOUNT_ID,
+    url = "https://www.facebook.com/api/graphql/",
+    data = "av=" + uid +
+    "&__usid=6-Ts20g08nye0w7:Ps20g0jrcnbbe:0-As20g081u1qe8j-RV=6:F=&session_id=177a0e9037f2097e&__user=" + uid +
+    "&__a=1&__req=1&__hs=19634.BP:DEFAULT.2.0..0.0&dpr=1.5&__ccg=GOOD&__rev=1009033342&__s=76bnwy:o48ic6:c939wu&__hsi=7286123890351188932&__dyn=7xeUmxa2C5ryoS1syU8EKmhG5UkBwqo98nCG6UmCyEgwjojyUW3qi4FoixWE-1txaczEeU-5Ejwl8gwqoqyojzoO4o461mCwOxa7FEd89EmwoU9FE4Wqmm2ZedUbpqG6kE8RoeUKUfo7y78qgOUa8lwWxe4oeUuyo465o-0xUnw8ScwgECu7E422a3Gi6rwiolDwjQ2C4oW2e1qyUszUiwExq1yxJUpx2aK2a4p8y26UcXwKwjovCxeq4qxS1cwjUd8-dwKwHxa1ozFUK1gzpErw-z8c89aDwKBwKG13y85i4oKqbDyoOEbVEHyU8U3yDwbm1Lx3wlF8aE4KeCK2q362u1dxW6U98a85Ou&__csr=&fb_dtsg=" + 
+    fb_dtsg +
+    "&jazoest=25527&lsd=JXY9TMZEbkjtUySfpFP22_&__aaid=0&__spin_r=1009033342&__spin_b=trunk&__spin_t=1696432914&fb_api_caller_class=RelayModern&fb_api_req_friendly_name=AccountQualityHubAssetOwnerViewQuery&variables=%7B%22assetOwnerId%22%3A%22" + 
+    uid +
+    "%22%7D&server_timestamps=true&doc_id=6941446569234532";
+
+const options = {
+    method: "POST",
+    body: data,
+    headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+};
+
+fetch(url, options)
+    .then((response) => response.json())
+    .then((data) => {
+        var restrictionType = data.data.assetOwnerData.advertising_restriction_info.restriction_type,
+            status = data.data.assetOwnerData.advertising_restriction_info.status,
+            isRestricted = data.data.assetOwnerData.advertising_restriction_info.is_restricted;
+
+        let result = "Desconocido";
+
+        if (restrictionType === "ADS_ACTOR_SCRIPTING" && !isRestricted) {
+            result = "Ocultar XMDT (Verificación 2 Líneas) [Tích ?n XMDT]";
+        } else if (status === "APPEAL_ACCEPTED" && restrictionType === "ALE" && !isRestricted) {
+            result = "902 (Verificación 3 Líneas)";
+        } else if (status === "APPEAL_ACCEPTED" && restrictionType === "PREHARM" && !isRestricted) {
+            result = "Vía XMDT (Verificación 2 Líneas)";
+        } else if (status === "APPEAL_PENDING" && restrictionType === "PREHARM" && isRestricted) {
+            result = "Revisión Pendiente XMDT";
+        } else if (status === "APPEAL_PENDING" && restrictionType === "ALE" && isRestricted) {
+            result = "Revisión Pendiente 902";
+        } else if (status === "APPEAL_REJECTED_NO_RETRY" && isRestricted) {
+            result = "Apelación Rechazada sin Reintento";
+        } else if (status === "APPEAL_TIMEOUT" && isRestricted) {
+            result = "Tiempo de Apelación Agotado";
+        } else if (status === "VANILLA_RESTRICTED" && restrictionType === "ALE" && isRestricted) {
+            result = "902 Muerto";
+        } else if (status === "VANILLA_RESTRICTED" && restrictionType === "PREHARM" && isRestricted) {
+            result = "XMDT Muerto";
+        } else if (status === "VANILLA_RESTRICTED" && restrictionType === "GENERIC" && isRestricted) {
+            result = "Spam Muerto";
+        } else if (status === "VANILLA_RESTRICTED" && restrictionType === "RISK_REVIEW" && isRestricted) {
+            result = "Revisión de Riesgo";
+        } else if (status === "NOT_RESTRICTED" && !isRestricted) {
+            result = "Anuncios Activos";
+        }
+
+        alert("Gestionado por Jorge Castillo\n\nEstado: " + result + "\n\nTipo: " + status + " " + restrictionType + " " + isRestricted);
+    })
+    .catch((error) => {
+        console.error("Error:", error);
+    });
